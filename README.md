@@ -1,3 +1,5 @@
+This entire thing has been forked and vibe-coded by Codex and a local llm in its entirety. Use at your own discretion.
+
 # HyprlandOverview
 
 A Quickshell workspace/window overview for Hyprland with live previews, persistent workspace names and visual ordering, window drag-and-drop between workspaces, and a Liquid Glass-inspired interface.
