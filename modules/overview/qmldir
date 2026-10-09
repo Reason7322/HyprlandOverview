@@ -1,0 +1,7 @@
+Overview 1.0 Overview.qml
+TaskView 1.0 TaskView.qml
+WindowPreviewSurface 1.0 WindowPreviewSurface.qml
+WindowPreviewCard 1.0 WindowPreviewCard.qml
+WindowOverview 1.0 WindowOverview.qml
+WorkspaceThumbnail 1.0 WorkspaceThumbnail.qml
+WorkspaceStrip 1.0 WorkspaceStrip.qml
