@@ -26,6 +26,7 @@ Item {
     readonly property bool dragging: dragHandler.active
     property real interactionScale: dragging ? 1.035 : (pressed ? 0.992 : 1.0)
     signal selectionRequested(string address)
+    signal closeRequested(string address)
     signal windowDragStarted(string address)
     signal windowDragMoved(string address, real sceneX, real sceneY)
     signal windowDragFinished(string address, bool canceled)
@@ -62,10 +63,7 @@ Item {
     function closeWindow() {
         if (!/^0x[0-9a-f]+$/i.test(root.address))
             return false;
-        if (Hyprland.usingLua)
-            Hyprland.dispatch(`hl.dsp.window.close('address:${root.address}')`);
-        else
-            Hyprland.dispatch(`closewindow address:${root.address}`);
+        root.closeRequested(root.address);
         return true;
     }
 

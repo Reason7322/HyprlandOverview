@@ -25,6 +25,13 @@ function reconcile(values, selectedAddress) {
     return ordered.includes(selected) ? selected : ordered[0];
 }
 
+function exact(values, requestedAddress) {
+    const requested = typeof requestedAddress === "string"
+        ? requestedAddress.trim()
+        : "";
+    return addresses(values).includes(requested) ? requested : "";
+}
+
 function move(values, selectedAddress, direction) {
     const ordered = addresses(values);
     if (ordered.length === 0)
@@ -38,6 +45,7 @@ function move(values, selectedAddress, direction) {
 if (typeof module !== "undefined") {
     module.exports = {
         addresses: addresses,
+        exact: exact,
         reconcile: reconcile,
         move: move
     };

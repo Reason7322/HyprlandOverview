@@ -66,6 +66,17 @@ Item {
         return root.selectedAddress.length > 0;
     }
 
+    function closeAddress(address) {
+        const currentAddress = WindowSelection.exact(root.cardAddresses, address);
+        if (currentAddress.length === 0)
+            return false;
+        if (Hyprland.usingLua)
+            Hyprland.dispatch(`hl.dsp.window.close({ window = 'address:${currentAddress}' })`);
+        else
+            Hyprland.dispatch(`closewindow address:${currentAddress}`);
+        return true;
+    }
+
     function selectedCard() {
         for (let index = 0; index < cardRepeater.count; index += 1) {
             const card = cardRepeater.itemAt(index);
@@ -82,7 +93,7 @@ Item {
 
     function closeSelected() {
         root.reconcileSelection();
-        return root.selectedCard()?.closeWindow() ?? false;
+        return root.closeAddress(root.selectedAddress);
     }
 
     function cancelActiveDrag() {
@@ -120,7 +131,7 @@ Item {
 
     Repeater {
         id: cardRepeater
-        model: root.cards
+        model: root.cardAddresses
         delegate: WindowPreviewCard {
             required property var modelData
             required property int index
@@ -130,13 +141,14 @@ Item {
             width: cardRect.width
             height: cardRect.height
             captionHeight: root.captionHeight
-            address: `${modelData?.address ?? ""}`
+            address: `${modelData ?? ""}`
             toplevel: root.toplevelForAddress(address)
-            windowData: modelData ?? null
+            windowData: root.windowByAddress[address] ?? null
             monitorId: root.monitorId
             recaptureToken: root.recaptureToken
             selected: root.selectedAddress === address
             onSelectionRequested: address => root.selectAddress(address)
+            onCloseRequested: address => root.closeAddress(address)
             onWindowDragStarted: address => root.windowDragStarted(address)
             onWindowDragMoved: (address, sceneX, sceneY) =>
                 root.windowDragMoved(address, sceneX, sceneY)
