@@ -4,6 +4,7 @@ import "../../common"
 import "../../common/functions"
 import "../../services"
 import "TaskViewGeometry.js" as TaskViewGeometry
+import "../../services/DesktopMetadata.js" as MetadataModel
 
 Item {
     id: root
@@ -20,14 +21,24 @@ Item {
         const h = m.transform % 2 === 1 ? m.width : m.height;
         return w / h;
     }
+    // The active workspace may be any positive integer ID, not just the
+    // classic ten desktops. Non-ordinary identifiers fall back to the first
+    // desktop like before.
     readonly property int activeWorkspaceId: {
-        const current = monitor?.activeWorkspace?.id ?? 1;
-        return current >= 1 && current <= 10 ? current : 1;
+        const current = monitor?.activeWorkspace?.id;
+        return Number.isInteger(current) && current >= 1 ? current : 1;
     }
     property int recaptureToken: 0
     property string draggedWindowAddress: ""
     property int windowDropWorkspaceId: -1
-    readonly property var viewMetrics: TaskViewGeometry.taskViewMetrics(width, height, root.displayAspect)
+    // Desktops the strip will show: saved set plus workspaces Hyprland
+    // currently reports, so filmstrip metrics track dynamic counts.
+    readonly property int desktopCount: {
+        return MetadataModel.mergeReported(
+            DesktopMetadata.state, HyprlandData.workspaceIds).entries.length;
+    }
+
+    readonly property var viewMetrics: TaskViewGeometry.taskViewMetrics(width, height, root.displayAspect, root.desktopCount)
 
     focus: panelWindow.monitorIsFocused && GlobalStates.overviewOpen
     // Inline desktop-name editors consume Enter/Escape first. The overview
@@ -35,7 +46,7 @@ Item {
     Keys.priority: Keys.AfterItem
 
     function activateWorkspace(workspaceId) {
-        if (!(workspaceId >= 1 && workspaceId <= 10))
+        if (!(Number.isInteger(workspaceId) && workspaceId >= 1))
             return;
         GlobalStates.overviewOpen = false;
         if (Hyprland.usingLua)
@@ -46,7 +57,7 @@ Item {
 
     function moveWindow(address, workspaceId) {
         if (!/^0x[0-9a-f]+$/i.test(`${address ?? ""}`)
-                || !(workspaceId >= 1 && workspaceId <= 10))
+                || !(Number.isInteger(workspaceId) && workspaceId >= 1))
             return;
         if (Hyprland.usingLua)
             Hyprland.dispatch(`hl.dsp.window.move({workspace = '${workspaceId}', follow = false, window = 'address:${address}'})`);
@@ -120,9 +131,11 @@ Item {
         else if (event.key === Qt.Key_0)
             target = 10;
         else if (event.key === Qt.Key_Left || event.key === Qt.Key_H)
-            target = DesktopMetadata.visualNeighbor(root.activeWorkspaceId, -1);
+            target = DesktopMetadata.visualNeighbor(
+                root.activeWorkspaceId, -1, HyprlandData.workspaceIds);
         else if (event.key === Qt.Key_Right || event.key === Qt.Key_L)
-            target = DesktopMetadata.visualNeighbor(root.activeWorkspaceId, 1);
+            target = DesktopMetadata.visualNeighbor(
+                root.activeWorkspaceId, 1, HyprlandData.workspaceIds);
 
         if (target >= 1) {
             root.activateWorkspace(target);

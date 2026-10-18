@@ -96,7 +96,6 @@ Singleton {
         }
 
         property QtObject overview: QtObject {
-            property int workspaceCount: root.readInt("overview.workspaceCount", 10)
             property bool enable: root.readBool("overview.enable", true)
             property bool closeOnFocusLoss: root.readBool("overview.closeOnFocusLoss", true)
             property bool previewsEnabled: root.readBool("overview.previewsEnabled", true)

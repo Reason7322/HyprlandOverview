@@ -6,6 +6,7 @@ import "../../common"
 import "../../common/functions"
 import "../../common/widgets"
 import "../../services"
+import "../../services/WorkspaceNaming.js" as Naming
 
 Item {
     id: root
@@ -26,6 +27,7 @@ Item {
     property bool headerHovered: false
     property bool editing: false
     property bool reorderDragging: false
+    property bool reorderEnabled: true
     // Lift scale applied while this desktop is the one being dragged.
     property real dragLift: reorderDragging ? 1.045 : 1.0
     property bool insertionBefore: false
@@ -70,6 +72,8 @@ Item {
     }
 
     function beginRename() {
+        if (!root.reorderEnabled)
+            return;
         root.editing = true;
         renameField.text = root.displayName;
         renameField.forceActiveFocus();
@@ -92,6 +96,11 @@ Item {
     }
 
     readonly property bool active: workspaceId === activeWorkspaceId
+
+    onReorderEnabledChanged: {
+        if (!root.reorderEnabled && root.editing)
+            root.cancelRename();
+    }
     readonly property real sourceWidth: monitorData?.transform % 2 === 1
         ? (monitorData?.height ?? 0) : (monitorData?.width ?? 0)
     readonly property real sourceHeight: monitorData?.transform % 2 === 1
@@ -109,6 +118,17 @@ Item {
     readonly property int windowCount: windowToplevels.length
     readonly property bool occupied: windowCount > 0
 
+    // Automatic presentation-only label: when this desktop's windows all come
+    // from one application, that application's friendly name is shown instead
+    // of the saved name; otherwise the saved name stands. The result never
+    // reaches disk and rename editing always targets displayName (saved).
+    readonly property var namingResult: Naming.resolve({
+        workspaceId: root.workspaceId,
+        savedName: root.displayName,
+        windows: windowToplevels
+    })
+    readonly property string displayLabel: `${root.namingResult?.label ?? ""}`
+
     Item {
         id: labelArea
         anchors.left: parent.left
@@ -117,22 +137,20 @@ Item {
         height: root.labelHeight
 
         Rectangle {
-            id: editBackdrop
-            anchors.fill: parent
-            anchors.leftMargin: 2
-            anchors.rightMargin: 2
-            radius: Appearance.rounding.small
-            color: ColorUtils.applyAlpha(Appearance.colors.colLayer0, 0.55)
+            id: renameBackdrop
+            visible: root.editing
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            width: parent.width - 4
+            height: parent.height
+            radius: Appearance.rounding.verysmall
+            color: ColorUtils.applyAlpha(
+                Appearance.colors.colLayer1, 0.82
+            )
             border.width: 1
             border.color: ColorUtils.applyAlpha(
-                Appearance.colors.colOnLayer0, 0.30)
-            opacity: root.editing ? 1 : 0
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: Appearance.animation.elementMoveFast.duration
-                    easing.type: Easing.OutCubic
-                }
-            }
+                Appearance.colors.colPrimary, 0.72
+            )
 
             Rectangle {
                 anchors.left: parent.left
@@ -148,19 +166,19 @@ Item {
             id: workspaceLabel
             visible: !root.editing
             anchors.fill: parent
-            anchors.leftMargin: 4
-            anchors.rightMargin: 4
-            text: root.displayName
-            color: root.dropHovered
+            anchors.leftMargin: 10
+            anchors.rightMargin: 10
+            text: root.displayLabel
+            color: root.active || root.dropHovered
                 ? Appearance.colors.colPrimary
-                : root.active
-                ? Appearance.colors.colOnLayer0
-                : (root.headerHovered
-                    ? Appearance.colors.colOnLayer1
-                    : Appearance.colors.colSubtext)
+                : Appearance.colors.colOnLayer1
             font.family: Appearance.font.family.main
-            font.pixelSize: Appearance.font.pixelSize.smaller
-            font.weight: root.active ? Font.DemiBold : Font.Normal
+            font.pixelSize: Appearance.font.pixelSize.small
+            font.weight: root.active || root.dropHovered || root.headerHovered
+                ? Font.DemiBold : Font.Medium
+            style: Text.Raised
+            styleColor: ColorUtils.applyAlpha(
+                Appearance.m3colors.m3shadow, 0.78)
             horizontalAlignment: Text.AlignLeft
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
@@ -171,8 +189,8 @@ Item {
             id: renameField
             visible: root.editing
             anchors.fill: parent
-            anchors.leftMargin: 4
-            anchors.rightMargin: 4
+            anchors.leftMargin: 10
+            anchors.rightMargin: 10
             color: Appearance.colors.colOnLayer0
             selectionColor: Appearance.colors.colPrimary
             selectedTextColor: Appearance.colors.colOnPrimary
@@ -181,7 +199,8 @@ Item {
                 color: Appearance.colors.colOnLayer1
             }
             font.family: Appearance.font.family.main
-            font.pixelSize: Appearance.font.pixelSize.smaller
+            font.pixelSize: Appearance.font.pixelSize.small
+            font.weight: Font.Medium
             verticalAlignment: TextInput.AlignVCenter
             clip: true
             selectByMouse: true
@@ -217,7 +236,7 @@ Item {
         MouseArea {
             id: reorderHandle
             anchors.fill: parent
-            enabled: !root.editing
+            enabled: root.reorderEnabled && !root.editing
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
             cursorShape: root.reorderDragging ? Qt.ClosedHandCursor : Qt.OpenHandCursor
@@ -265,6 +284,7 @@ Item {
         }
 
         DropArea {
+            enabled: root.reorderEnabled
             anchors.left: parent.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -277,6 +297,7 @@ Item {
         }
 
         DropArea {
+            enabled: root.reorderEnabled
             anchors.right: parent.right
             anchors.top: parent.top
             anchors.bottom: parent.bottom
@@ -311,7 +332,7 @@ Item {
                 return Appearance.colors.colPrimary;
             if (root.hovered)
                 return ColorUtils.applyAlpha(
-                    Appearance.colors.colOnLayer0, 0.45);
+                    Appearance.colors.colPrimary, 0.72);
             return ColorUtils.applyAlpha(
                 Appearance.colors.colOutline,
                 Config.options.overview.effects.glassBorderOpacity);
@@ -407,7 +428,7 @@ Item {
                 id: dropTargetText
                 anchors.centerIn: parent
                 width: Math.min(implicitWidth, windowDropTarget.width - 16)
-                text: `Move to ${root.displayName}`
+                text: `Move to ${root.displayLabel}`
                 color: Appearance.colors.colOnPrimary
                 font.family: Appearance.font.family.main
                 font.pixelSize: Appearance.font.pixelSize.smaller
@@ -489,7 +510,9 @@ Item {
         onEntered: root.hovered = true
         onExited: root.hovered = false
         onClicked: {
-            if (root.workspaceId >= 1 && root.workspaceId <= 10)
+            // Any ordinary desktop ID is activatable; the strip only ever
+            // builds delegates from valid workspace IDs.
+            if (Number.isInteger(root.workspaceId) && root.workspaceId >= 1)
                 root.activated(root.workspaceId);
         }
     }

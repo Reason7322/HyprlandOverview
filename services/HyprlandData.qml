@@ -184,7 +184,13 @@ Singleton {
             onStreamFinished: {
                 const rawWorkspaces = JSON.parse(workspacesCollector.text);
                 root.allWorkspaces = rawWorkspaces;
-                root.workspaces = rawWorkspaces.filter(ws => ws.id >= 1 && ws.id <= 100);
+                // Ordinary desktops are positive integer IDs with no upper
+                // bound. Special/named workspaces report non-ordinary IDs and
+                // stay out of the overview strip.
+                root.workspaces = rawWorkspaces.filter(ws => {
+                    const id = ws?.id;
+                    return Number.isInteger(id) && id >= 1;
+                });
                 let tempWorkspaceById = {};
                 for (var i = 0; i < root.workspaces.length; ++i) {
                     var ws = root.workspaces[i];

@@ -57,6 +57,16 @@ Item {
         }
     }
 
+    Rectangle {
+        id: previewTint
+        anchors.fill: parent
+        radius: root.cornerRadius
+        color: Appearance.colors.colLayer2
+        opacity: Math.max(0, Math.min(1,
+            Config.options.overview.effects.windowOverlayOpacity))
+        visible: opacity > 0
+    }
+
     Item {
         id: previewMask
         anchors.fill: preview

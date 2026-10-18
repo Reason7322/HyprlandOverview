@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Wayland
 import "../../common"
+import "../../common/functions"
 import "../../services"
 import "TaskViewGeometry.js" as TaskViewGeometry
 import "WindowSelection.js" as WindowSelection
@@ -120,13 +121,32 @@ Item {
         }
     }
 
-    Text {
+    Rectangle {
+        id: emptyStatePill
         anchors.centerIn: parent
         visible: root.cards.length === 0
-        text: `Workspace ${root.workspaceId} is empty`
-        color: Appearance.colors.colSubtext
-        font.family: Appearance.font.family.main
-        font.pixelSize: Appearance.font.pixelSize.small
+        width: emptyStateText.implicitWidth + 30
+        height: 38
+        radius: Appearance.rounding.normal
+        color: ColorUtils.applyAlpha(
+            Appearance.colors.colLayer1,
+            Math.min(0.88,
+                Config.options.overview.effects.panelOpacity + 0.12)
+        )
+        border.width: 1
+        border.color: ColorUtils.applyAlpha(
+            Appearance.colors.colOutline,
+            Config.options.overview.effects.glassBorderOpacity)
+
+        Text {
+            id: emptyStateText
+            anchors.centerIn: parent
+            text: `Workspace ${root.workspaceId} is empty`
+            color: Appearance.colors.colOnLayer1
+            font.family: Appearance.font.family.main
+            font.pixelSize: Appearance.font.pixelSize.small
+            font.weight: Font.Medium
+        }
     }
 
     Repeater {

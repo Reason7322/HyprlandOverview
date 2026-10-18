@@ -1,0 +1,8 @@
+
+# Generated local theme and deployment metadata
+/common/Appearance.colors.qml
+/config.json
+/.hyprland-overview-stage.json
+
+__pycache__/
+*.pyc

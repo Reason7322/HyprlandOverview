@@ -21,7 +21,15 @@ Singleton {
     readonly property var order: state.order
     readonly property var entries: state.entries
     property bool loadComplete: false
+    property bool migrationRunning: false
     property string lastError: ""
+
+    function startMigration() {
+        if (root.migrationRunning)
+            return;
+        root.migrationRunning = true;
+        migrationProcess.running = true;
+    }
 
     function loadFromDisk() {
         const payload = stateFile.text().trim();
@@ -67,8 +75,12 @@ Singleton {
         });
     }
 
-    function visualNeighbor(workspaceId, direction) {
-        return MetadataModel.neighbor(root.order, workspaceId, direction);
+    // reportedWorkspaceIds are the workspaces Hyprland currently reports so
+    // keyboard navigation reaches desktops beyond the saved strip.
+    function visualNeighbor(workspaceId, direction, reportedWorkspaceIds) {
+        const merged = MetadataModel.mergeReported(
+            root.state, reportedWorkspaceIds ?? []);
+        return MetadataModel.neighbor(merged.order, workspaceId, direction);
     }
 
     FileView {
@@ -79,7 +91,10 @@ Singleton {
         atomicWrites: true
         watchChanges: true
         printErrors: false
-        onFileChanged: root.loadFromDisk()
+        onFileChanged: {
+            if (!root.migrationRunning)
+                root.loadFromDisk();
+        }
         onLoadFailed: error => {
             if (error !== FileViewError.FileNotFound)
                 console.warn("overview: desktop metadata load failed", FileViewError.toString(error));
@@ -92,5 +107,34 @@ Singleton {
         }
     }
 
-    Component.onCompleted: loadFromDisk()
+    Process {
+        id: migrationProcess
+        command: [
+            "python3",
+            `${Quickshell.shellDir}/services/workspace_reorder.py`,
+            "migrate-metadata",
+            "--metadata",
+            root.statePath
+        ]
+        stdout: StdioCollector {
+            id: migrationOutput
+        }
+        stderr: StdioCollector {
+            id: migrationError
+        }
+        onExited: (exitCode, exitStatus) => {
+            root.migrationRunning = false;
+            if (exitCode === 0) {
+                root.lastError = "";
+                root.loadFromDisk();
+            } else {
+                root.lastError = migrationError.text.trim().length > 0
+                    ? migrationError.text.trim() : migrationOutput.text.trim();
+                root.loadComplete = true;
+                console.warn("overview: desktop metadata migration failed", root.lastError);
+            }
+        }
+    }
+
+    Component.onCompleted: root.startMigration()
 }

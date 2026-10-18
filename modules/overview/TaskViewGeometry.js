@@ -47,18 +47,27 @@ function heightCapFraction(count) {
     return 1.0;
 }
 
-function taskViewMetrics(width, height, displayAspect) {
+function taskViewMetrics(width, height, displayAspect, workspaceCount) {
     const safeWidth = Math.max(1, width);
     const safeHeight = Math.max(1, height);
+    // How many desktops the strip will show. The row has always been
+    // sized so ten thumbnails fill it; a larger count keeps that size
+    // and the existing horizontal scroll instead of shrinking tiles.
+    const displayedWorkspaceCount =
+        Math.max(1, Math.floor(Number(workspaceCount) || 10));
     const safeAspect = Number(displayAspect) > 0.2 && Number(displayAspect) < 8
         ? Number(displayAspect) : 16 / 9;
 
-    // Bottom filmstrip: all ten workspace thumbnails in one centered row.
-    // No enclosing card; the row rests a short margin above the bottom edge,
-    // matching the Windows 11 Task View desktop strip placement.
+    // Bottom filmstrip: desktop thumbnails in one centered scrollable
+    // row that rests a short margin above the bottom edge.
+    // No enclosing card, matching the Windows 11 Task View desktop
+    // strip.
     const stripBottom = clamp(safeHeight * 0.05, 36, 96);
     const stripSpacing = clamp(safeWidth * 0.007, 12, 22);
-    let thumbnailWidth = (safeWidth * 0.94 - stripSpacing * 9) / 10;
+    // The classic ten-thumbnail width is the sizing anchor for every
+    // count, so default desktops keep their existing visual size.
+    const sizeCount = Math.max(1, Math.min(displayedWorkspaceCount, 10));
+    let thumbnailWidth = (safeWidth * 0.94 - stripSpacing * (sizeCount - 1)) / sizeCount;
     thumbnailWidth = Math.max(120, thumbnailWidth);
     let thumbnailHeight = Math.min(thumbnailWidth / safeAspect, safeHeight * 0.18);
     if (thumbnailHeight < thumbnailWidth / safeAspect)
@@ -67,7 +76,8 @@ function taskViewMetrics(width, height, displayAspect) {
     const labelGap = clamp(safeHeight * 0.004, 4, 8);
     const stripHeight = labelHeight + labelGap + thumbnailHeight;
 
-    const stripTotalWidth = thumbnailWidth * 10 + stripSpacing * 9;
+    const stripTotalWidth = thumbnailWidth * displayedWorkspaceCount
+        + stripSpacing * (displayedWorkspaceCount - 1);
     const stripViewportWidth = Math.min(stripTotalWidth, safeWidth * 0.94);
     const desktopStrip = {
         x: Math.max(0, (safeWidth - stripViewportWidth) / 2),

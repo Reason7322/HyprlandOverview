@@ -2,6 +2,7 @@ import QtQuick
 import "../../common"
 import "../../services"
 import "../../services/DesktopMetadata.js" as MetadataModel
+import "WorkspaceStripWheel.js" as WheelModel
 
 Item {
     id: root
@@ -15,6 +16,10 @@ Item {
     property real labelHeight: 22
     property real labelGap: 5
     property bool reorderActive: false
+    property var reorderSlotOrder: []
+    readonly property bool reorderInteractionsEnabled:
+        !(WorkspaceReorder.busy || WorkspaceReorder.blocked)
+        && DesktopMetadata.loadComplete && !DesktopMetadata.migrationRunning
     property int draggedWorkspaceId: -1
     property int insertionWorkspaceId: -1
     property bool insertionAfter: false
@@ -22,9 +27,16 @@ Item {
     signal workspaceActivated(int workspaceId)
     signal windowMoveRequested(string address, int workspaceId)
 
+    // Persisted metadata plus the workspaces Hyprland currently reports. The
+    // merge is presentation-only; nothing here writes back to disk on its own.
+    function mergedEntries() {
+        return MetadataModel.mergeReported(
+            DesktopMetadata.state, HyprlandData.workspaceIds).entries;
+    }
+
     function syncFromStore() {
         desktopModel.clear();
-        DesktopMetadata.entries.forEach(entry => {
+        mergedEntries().forEach(entry => {
             desktopModel.append({
                 workspaceId: entry.workspaceId,
                 displayName: entry.name
@@ -55,8 +67,11 @@ Item {
     }
 
     function beginReorder(workspaceId) {
-        if (!(workspaceId >= 1 && workspaceId <= 10))
+        if (!root.reorderInteractionsEnabled)
             return;
+        if (!(Number.isInteger(workspaceId) && workspaceId >= 1))
+            return;
+        root.reorderSlotOrder = root.currentOrder().slice();
         root.reorderActive = true;
         root.draggedWorkspaceId = workspaceId;
         root.insertionWorkspaceId = workspaceId;
@@ -107,10 +122,11 @@ Item {
         root.insertionWorkspaceId = -1;
         root.insertionAfter = false;
         viewport.interactive = true;
-        if (canceled)
+        if (canceled || JSON.stringify(root.reorderSlotOrder) === JSON.stringify(committedOrder))
             root.syncFromStore();
         else
-            DesktopMetadata.setOrder(committedOrder);
+            WorkspaceReorder.request(root.reorderSlotOrder, committedOrder);
+        root.reorderSlotOrder = [];
     }
 
     ListModel {
@@ -120,7 +136,24 @@ Item {
     Connections {
         target: DesktopMetadata
         function onStateChanged() {
-            if (!root.reorderActive)
+            if (!root.reorderActive && !WorkspaceReorder.busy)
+                root.syncFromStore();
+        }
+    }
+
+    Connections {
+        target: WorkspaceReorder
+        function onFinished(status, message) {
+            root.syncFromStore();
+        }
+    }
+
+    // Live workspace set changes while the overview is open (created, closed,
+    // moved) resync the strip without disturbing in-progress reorder previews.
+    Connections {
+        target: HyprlandData
+        function onWorkspaceIdsChanged() {
+            if (!root.reorderActive && !WorkspaceReorder.busy)
                 root.syncFromStore();
         }
     }
@@ -166,6 +199,7 @@ Item {
                     height: root.labelHeight + root.labelGap + root.thumbnailHeight
                     labelHeight: root.labelHeight
                     labelGap: root.labelGap
+                    reorderEnabled: root.reorderInteractionsEnabled
                     dropHovered: root.windowDropWorkspaceId === workspaceId
                     insertionBefore: root.reorderActive
                         && root.insertionWorkspaceId === workspaceId
@@ -175,7 +209,10 @@ Item {
                         && root.insertionAfter
                     onActivated: workspaceId => root.workspaceActivated(workspaceId)
                     onWindowMoveRequested: (address, workspaceId) => root.windowMoveRequested(address, workspaceId)
-                    onRenameRequested: (workspaceId, name) => DesktopMetadata.renameWorkspace(workspaceId, name)
+                    onRenameRequested: (workspaceId, name) => {
+                        if (root.reorderInteractionsEnabled)
+                            DesktopMetadata.renameWorkspace(workspaceId, name);
+                    }
                     onDesktopDragStarted: workspaceId => root.beginReorder(workspaceId)
                     onDesktopDragMoved: (workspaceId, sceneX) =>
                         root.previewReorderAt(workspaceId, sceneX)
@@ -196,9 +233,54 @@ Item {
         }
     }
 
+    Rectangle {
+        visible: WorkspaceReorder.lastError.length > 0
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.bottom: parent.bottom
+        anchors.bottomMargin: 2
+        width: Math.min(parent.width - 16, reorderStatus.implicitWidth + 20)
+        height: reorderStatus.implicitHeight + 10
+        radius: Appearance.rounding.verysmall
+        color: Appearance.colors.colLayer1
+        border.width: 1
+        border.color: Appearance.colors.colPrimary
+        z: 20
+
+        Text {
+            id: reorderStatus
+            anchors.centerIn: parent
+            width: Math.min(implicitWidth, root.width - 36)
+            text: WorkspaceReorder.lastError
+            color: Appearance.colors.colOnLayer1
+            font.family: Appearance.font.family.main
+            font.pixelSize: Appearance.font.pixelSize.small
+            elide: Text.ElideRight
+            maximumLineCount: 1
+        }
+    }
+
+    // Qt can classify a physical mouse wheel as a TouchPad device. Discrete
+    // angle-only wheel events move the strip one thumbnail pitch, while smooth
+    // pixel-delta touchpad gestures are explicitly released to Flickable.
     WheelHandler {
         target: viewport
         acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        orientation: Qt.Horizontal
+        orientation: Qt.Vertical
+
+        onWheel: event => {
+            const action = WheelModel.action({
+                angleDeltaY: event.angleDelta.y,
+                pixelDeltaX: event.pixelDelta.x,
+                pixelDeltaY: event.pixelDelta.y,
+                contentX: viewport.contentX,
+                contentWidth: viewport.contentWidth,
+                viewportWidth: viewport.width,
+                step: root.thumbnailWidth + root.stripSpacing,
+                reorderActive: root.reorderActive
+            });
+            event.accepted = action.accepted;
+            if (action.accepted && action.contentX !== viewport.contentX)
+                viewport.contentX = action.contentX;
+        }
     }
 }

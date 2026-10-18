@@ -1,0 +1,41 @@
+{
+  "appearance": {
+    "colorSource": "noctalia",
+    "rounding": {
+      "verysmall": 8,
+      "small": 12,
+      "normal": 17,
+      "large": 23,
+      "windowRounding": 18
+    }
+  },
+  "overview": {
+    "enable": true,
+    "closeOnFocusLoss": true,
+    "previewsEnabled": true,
+    "previewMode": "live",
+    "includeInactiveMonitorPreviews": true,
+    "previewRecaptureDelayMs": 60,
+    "effects": {
+      "enableBackdrop": true,
+      "backdropOpacity": 0.40,
+      "panelOpacity": 0.72,
+      "workspaceOpacity": 0.68,
+      "windowOverlayOpacity": 0.10,
+      "enableBlur": true,
+      "glassMode": true,
+      "glassTintStrength": 0.35,
+      "glassBorderOpacity": 0.78,
+      "glassShineOpacity": 0.14
+    }
+  },
+  "windowPreview": {
+    "showIcons": true,
+    "inactiveMonitorOpacity": 0.55,
+    "cropToFill": false
+  },
+  "hacks": {
+    "arbitraryRaceConditionDelay": 150,
+    "hyprlandEventDebounceMs": 40
+  }
+}
