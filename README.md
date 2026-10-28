@@ -1,3 +1,5 @@
+> ### This overview is 100% vibe coded by OpenAI Codex and my locally running Qwen model. Use it at your own discretion.
+
 # HyprlandOverview — deployed Quickshell source
 
 This is the owner's **deployed** Hyprland Quickshell workspace overview, with live window previews, drag-and-drop, workspace naming and reordering, and Liquid Glass integration.
