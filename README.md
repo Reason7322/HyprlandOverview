@@ -6,6 +6,8 @@
 
 A standalone [Quickshell](https://quickshell.org/) workspace overview for [Hyprland](https://hypr.land/). Includes live previews, window drag-and-drop, keyboard navigation, workspace naming, and reordering workspace contents.
 
+![HyprlandOverview in action](screenshot.png)
+
 
 
 ## Install and run
