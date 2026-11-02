@@ -52,8 +52,12 @@ function plan(slotOrder, identityOrder, clients, workspaces, rules) {
     for (const rule of rules) {
         const selector = String(rule.workspaceString ?? rule.workspaceId
             ?? rule.workspaceName ?? "");
-        // Numeric rules outside the swap are harmless. Unknown selectors and
-        // ranges are not proven harmless; fail closed instead of modifying config.
+        // Style-only rules (for example w[tv1] with border=false) cannot
+        // dictate workspace identity or monitor placement. Reject only rules
+        // that pin workspace identity/placement into the affected permutation.
+        const placesWorkspace = (rule.monitor !== undefined && rule.monitor !== null
+                && rule.monitor !== "") || !!rule.persistent || !!rule.isPersistent;
+        if (!placesWorkspace) continue;
         if (selector.startsWith("special:")) continue;
         if (/^\d+$/.test(selector) && !affected.has(Number(selector))) continue;
         throw new Error("workspace rule may pin an affected desktop; reorder refused");

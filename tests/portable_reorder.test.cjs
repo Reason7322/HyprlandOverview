@@ -60,7 +60,10 @@ test('rejects pinned workspace placements before any dispatch', () => {
     assert.throws(()=>re.plan(x.slots,x.identities,x.clients,x.workspaces,
         [{workspaceString:'1', monitor:'DP-1'}]),/rule may pin/);
     assert.throws(()=>re.plan(x.slots,x.identities,x.clients,x.workspaces,
-        [{workspaceString:'r[1-10]'}]),/rule may pin/);
+        [{workspaceString:'r[1-10]', monitor:'DP-1'}]),/rule may pin/);
+    assert.doesNotThrow(()=>re.plan(x.slots,x.identities,x.clients,x.workspaces,
+        [{workspaceString:'w[tv1]', border:false},
+         {workspaceString:'f[1]', border:false}]));
     assert.doesNotThrow(()=>re.plan(x.slots,x.identities,x.clients,x.workspaces,
         [{workspaceString:'20', monitor:'DP-1'}]));
 });

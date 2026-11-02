@@ -20,8 +20,10 @@ Branch: `sol/portable-standalone`, based on public GitHub `main` at `f0643a18681
 - Node.js model tests: 8 passing (2026-11-02).
 - `node --check` on `services/PortableReorder.js`: passed.
 - `git diff --check`: passed.
-- QML parsed by an actual Quickshell instance: **NOT TESTED**.
-- Live preview/window operations/workspace reordering: **NOT TESTED in this branch**.
+- Quickshell 0.3.2 on Hyprland 0.57.0: **Configuration Loaded** from isolated Git checkout via `qs -p`, with isolated XDG config/state/cache. Test process exited after a bounded run.
+- Live actual UI screenshot captured while the isolated instance received IPC `overview open`: workspace tiles, live previews and labels visibly rendered. IPC `open` and `close` returned successfully. Evidence: `/home/reason/Projects/ChatGPTProjects/Scratch/HyprlandOverview/overview-open.png` and `runtime-open.log`. One nonfatal missing-app-icon warning.
+- The actual Hyprland 0.57.0 reports `configProvider: lua` and two cosmetic workspace rules (`w[tv1]`, `f[1]`). Initial rule detection falsely refused these. **Fixed in the branch**, extended tests passed, and read-only dry-run plans for 9↔10 and 1↔2 are now accepted. No dispatch commands were executed.
+- Real window drag/drop and workspace reordering: **NOT TESTED in this branch**.
 - Deployment onto owner's running overview: **NOT DONE**.
 - Second machine / other compositor version: **NOT TESTED**.
 
@@ -29,8 +31,8 @@ Branch: `sol/portable-standalone`, based on public GitHub `main` at `f0643a18681
 - Portability is partially implemented but not accepted until the fresh clone launches and renders, window drag/drop works, safe content reordering works and fails safely, and cross-machine behavior is demonstrated.
 - IPC calls are not atomic; if Quickshell or the compositor is killed mid-transaction, automatic rollback may not run. Unsupported window states are refused.
 - Real reordering of user-defined pinned rules across all Hyprland configurations is not portable without changing those users' rules; this branch deliberately refuses it. The owner's original rules.lua-aware helper is retained in Git history and source but not invoked by default.
-- A separate non-live fresh-config QML start check and then an owner-approved live visual/functional acceptance check are necessary.
+- Isolated runtime QML launch and real UI rendering are confirmed on M A C H I N E. Window moving, workspace renaming persistence, true reorder and rollback still need controlled runtime acceptance; do not move the owner's existing windows without explicit approval.
 - No merge to main, live install/restart, or system configuration edits are authorized by this checkpoint alone.
 
 ### Next potential action
-Investigate the static QML/runtime integration on a disposable non-live Quickshell configuration where startup cannot replace or disrupt the current instance. Perform live acceptance only with Reason's separate exact-scope authorization.
+Arrange a controlled test of actual window movement, workspace name persistence, and content reordering using **disposable windows** with rollback, only after Reason explicitly approves creating and moving those windows on M A C H I N E.

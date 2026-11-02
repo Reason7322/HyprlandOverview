@@ -80,7 +80,7 @@ The legacy Python-based rule-rewriting helper remains in the source tree for his
 
 ## Verification status
 
-The standalone implementation is under portability repair. Source-level and Node.js model tests exercise the reorder planner, dispatch formatting, safety refusals and bundled palette; **live Quickshell rendering, runtime reordering, and cross-machine compatibility have not yet been verified for this revision.** This is not a promise that all Hyprland versions and layouts behave identically.
+The standalone implementation is under portability repair. Eight Node.js model tests pass. A separate test instance launched successfully on the owner's Hyprland 0.57.0 / Quickshell 0.3.2 desktop, rendered workspace tiles and live previews, and responded to IPC open/close; it used isolated XDG directories. **Real window moves/reordering and cross-machine compatibility remain unverified for this revision.** This is not a promise that all Hyprland versions and layouts behave identically.
 
 See `PROJECT_STATUS.md` for the exact validation status and known limitations.
 
