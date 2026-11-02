@@ -92,6 +92,6 @@ See `PROJECT_STATUS.md` for the exact validation status and known limitations.
 
 The earlier owner-deployed source was recovered from Qwen commit `b3a2ceb3c5afdeadd179297c1f481d564d4362d2` (October 14, 2026). The archived source comparison excluded machine-generated files. This portability branch changes that code; the historical source-parity claim is **not** a test of this new branch.
 
-Original overview concept and extracted component credited to [end-4/illogical-impulse](https://github.com/end-4/dots-hyprland), as documented in the upstream README. This repository carries the GNU GPL v3 license in `LICENSE`.
+HyprlandOverview is a substantially redesigned derivative of [Shanu-Kumawat/quickshell-overview](https://github.com/Shanu-Kumawat/quickshell-overview), originally imported from upstream commit `47f0d402822b26805ed0ecea4a770c38c537b728`. The repository is distributed under the GNU GPL v3; see [LICENSE](LICENSE).
 
 Personal project. Contributions and improvements are welcome.
