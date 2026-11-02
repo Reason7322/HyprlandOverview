@@ -1,6 +1,6 @@
 # HyprlandOverview
 
-> **This application is 100% vibe coded by OpenAI Codex and my locally running Qwen model. Use it at your own discretion.**
+> ### This application is 100% vibe coded by OpenAI Codex and my locally running Qwen model. Use it at your own discretion.
 
 
 A standalone [Quickshell](https://quickshell.org/) workspace overview for [Hyprland](https://hypr.land/). Includes live previews, window drag-and-drop, keyboard navigation, workspace naming, and reordering workspace contents.
