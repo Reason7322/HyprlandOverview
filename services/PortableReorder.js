@@ -43,7 +43,7 @@ function plan(slotOrder, identityOrder, clients, workspaces, rules) {
     const mapping = permutation(slotOrder, identityOrder);
     const sources = Object.keys(mapping).map(Number);
     if (sources.length === 0)
-        return {mapping, rows: [], first: [], second: [], recovery: []};
+        return {mapping, rows: [], moves: [], recovery: []};
     if (!Array.isArray(clients) || !Array.isArray(workspaces) || !Array.isArray(rules))
         throw new Error("could not inspect live Hyprland state");
     const affected = new Set([...sources, ...Object.values(mapping)]);
@@ -67,9 +67,6 @@ function plan(slotOrder, identityOrder, clients, workspaces, rules) {
     if (affectedMonitors.size > 1)
         throw new Error("cross-monitor desktop reordering is not yet supported");
 
-    const used = new Set([...affected]);
-    for (const workspace of workspaces)
-        if (validId(workspace.id)) used.add(workspace.id);
     const rows = [];
     for (const client of clients) {
         const source = client?.workspace?.id;
@@ -84,20 +81,12 @@ function plan(slotOrder, identityOrder, clients, workspaces, rules) {
             throw new Error("grouped, pinned, swallowed, fullscreen or pseudo windows cannot be safely reordered");
         rows.push({address, source, destination: mapping[source]});
     }
-    let temporary = 2147483647;
-    const tempBySource = {};
-    for (const source of sources) {
-        if (!rows.some(row => row.source === source)) continue;
-        while (used.has(temporary) && temporary > 0) temporary--;
-        if (!validId(temporary)) throw new Error("no free temporary workspace ID");
-        tempBySource[source] = temporary;
-        used.add(temporary--);
-    }
-    for (const row of rows) row.temporary = tempBySource[row.source];
+
+    // Dispatches target windows by exact address, so a permutation needs no
+    // staging workspaces. Do not touch unapproved/unrelated workspace IDs.
     return {
         mapping, rows,
-        first: rows.map(r => ({address:r.address, target:r.temporary})),
-        second: rows.map(r => ({address:r.address, target:r.destination})),
+        moves: rows.map(r => ({address:r.address, target:r.destination})),
         recovery: rows.map(r => ({address:r.address, target:r.source}))
     };
 }
@@ -106,9 +95,9 @@ function dispatch(move, mode) {
     if (!/^0x[0-9a-f]+$/i.test(move.address) || !validId(move.target))
         throw new Error("unsafe dispatch request");
     if (mode === "lua")
-        return "hyprctl dispatch 'hl.dsp.window.move({workspace = \""
+        return "hyprctl eval 'hl.dispatch(hl.dsp.window.move({workspace = \""
             + move.target + "\", follow = false, window = \"address:"
-            + move.address + "\"})'";
+            + move.address + "\"}))'";
     if (mode === "legacy")
         return "hyprctl dispatch movetoworkspacesilent '"
             + move.target + ",address:" + move.address + "'";
@@ -125,8 +114,7 @@ function checkClients(snapshot, rows, phase) {
     const byAddress = {};
     snapshot.forEach(c => { byAddress[c.address] = c.workspace?.id; });
     for (const row of rows) {
-        const expected = phase === "first" ? row.temporary
-            : phase === "second" ? row.destination : row.source;
+        const expected = phase === "second" ? row.destination : row.source;
         if (byAddress[row.address] !== expected)
             return false;
     }

@@ -19,16 +19,15 @@ test('reorder maps real desktop identities to target numeric IDs', () => {
     const x=sample();
     const p=re.plan(x.slots, x.identities, x.clients, x.workspaces, x.rules);
     assert.deepEqual(p.mapping, {'1':2, '2':1});
-    assert.equal(p.first.length, 2);
-    assert.deepEqual(p.second.map(m=>m.target), [2,1]);
-    assert.notEqual(p.first[0].target, p.first[1].target);
-    assert.ok(p.first.every(m => m.target > 3));
+    assert.equal(p.moves.length, 2);
+    assert.deepEqual(p.moves.map(m=>m.target), [2,1]);
     assert.deepEqual(p.recovery.map(m=>m.target), [1,2]);
-    const first=p.rows.map(r=>({address:r.address,workspace:{id:r.temporary}}));
-    const second=p.rows.map(r=>({address:r.address,workspace:{id:r.destination}}));
-    assert.equal(re.checkClients(first,p.rows,'first'),true);
-    assert.equal(re.checkClients(second,p.rows,'second'),true);
-    assert.equal(re.checkClients(second,p.rows,'first'),false);
+    assert.ok(p.moves.every(m=>[1,2,3].includes(m.target)), 'no staging workspace');
+    const original=p.rows.map(r=>({address:r.address,workspace:{id:r.source}}));
+    const moved=p.rows.map(r=>({address:r.address,workspace:{id:r.destination}}));
+    assert.equal(re.checkClients(original,p.rows,'recover'),true);
+    assert.equal(re.checkClients(moved,p.rows,'second'),true);
+    assert.equal(re.checkClients(original,p.rows,'second'),false);
 });
 
 test('provider detects both config formats and refuses unknown modes', () => {
@@ -40,7 +39,8 @@ test('provider detects both config formats and refuses unknown modes', () => {
 
 test('commands dispatch to the intended window without using config writes', () => {
     const move={address:'0xabc',target:2};
-    assert.match(re.dispatch(move,'lua'),/hl\.dsp\.window\.move/);
+    assert.match(re.dispatch(move,'lua'),/hyprctl eval/);
+    assert.match(re.dispatch(move,'lua'),/hl\.dispatch\(hl\.dsp\.window\.move/);
     assert.match(re.dispatch(move,'legacy'),/movetoworkspacesilent/);
     assert.match(re.batch([move],'lua'),/set -e/);
     assert.doesNotMatch(re.batch([move],'lua'),/rules\.lua|reload|python3/);
@@ -81,6 +81,7 @@ test('no client moves are generated for empty desktops', () => {
     const x=sample();
     const p=re.plan(x.slots,x.identities,[],x.workspaces,x.rules);
     assert.equal(p.rows.length,0);
+    assert.equal(p.moves.length,0);
     assert.deepEqual(p.mapping, {'1':2,'2':1});
 });
 

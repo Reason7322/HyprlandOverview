@@ -33,6 +33,10 @@ Singleton {
     function request(slots, identities) {
         if (root.busy || root.blocked)
             return false;
+        if (!DesktopMetadata.loadComplete) {
+            root.finish("refused", "workspace metadata is not ready yet");
+            return false;
+        }
         try {
             Reorder.permutation(slots, identities);
         } catch (error) {
@@ -70,10 +74,7 @@ Singleton {
     }
 
     function advance() {
-        if (root.stage === "first") {
-            root.stage = "second";
-            runMoves(root.pendingPlan.second);
-        } else if (root.stage === "second") {
+        if (root.stage === "second") {
             DesktopMetadata.applyPermutation(root.pendingPlan.mapping);
             root.finish("success", "workspace content reordered");
         } else if (root.stage === "recover") {
@@ -115,8 +116,8 @@ Singleton {
                     root.finish("success", "reordered empty desktop metadata");
                     return;
                 }
-                root.stage = "first";
-                root.runMoves(root.pendingPlan.first);
+                root.stage = "second";
+                root.runMoves(root.pendingPlan.moves);
             } catch (error) {
                 root.finish("refused", String(error));
             }

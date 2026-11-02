@@ -68,11 +68,11 @@ Do not add a second autostart if another part of your desktop already starts `qs
 
 `config.example.json` shows the available basic settings. Noctalia and wallpaper-based appearance generation are **optional**; the versioned `common/Appearance.colors.qml` contains a complete standalone palette. Replacing that file with a generated palette is an optional customization and may leave local Git changes.
 
-Desktop names are saved under `${XDG_STATE_HOME:-~/.local/state}/hyprland-overview-desktops.json` (XDG default path shown as shorthand). Custom `config.json` remains local and is excluded from Git.
+Desktop names are saved at `$XDG_STATE_HOME/hyprland-overview-desktops.json` when `XDG_STATE_HOME` is set, or `~/.local/state/hyprland-overview-desktops.json` otherwise. Custom `config.json` remains local and is excluded from Git.
 
 ### Workspace reordering safety and limitations
 
-Hyprland workspaces have numeric identities. Reordering their **contents** is not the same as changing the visual strip order. The standalone implementation uses Hyprland IPC to move windows in two phases, verifies the new window IDs, and attempts restoration on failure. It does **not** edit `hyprland.lua`, `hyprland.conf`, or restart/reload Hyprland.
+Hyprland workspaces have numeric identities. Reordering their **contents** is not the same as changing the visual strip order. The standalone implementation uses Hyprland IPC to move windows by exact address, verifies their destination workspace IDs, and attempts restoration on failure. It does not create temporary workspaces. It does **not** edit `hyprland.lua`, `hyprland.conf`, or restart/reload Hyprland.
 
 Because window rules and monitor placement can conflict with renumbering, the overview currently **refuses a reorder** when it detects affected pinned workspace rules, complex window states, or a cross-monitor permutation. Dragging individual windows and naming workspaces remain separate functions. Reordering does not migrate permanent window rules: edit those intentionally if you want changed assignments to survive future application launches.
 
@@ -80,7 +80,7 @@ The legacy Python-based rule-rewriting helper remains in the source tree for his
 
 ## Verification status
 
-The standalone implementation is under portability repair. Eight Node.js model tests pass. A separate test instance launched successfully on the owner's Hyprland 0.57.0 / Quickshell 0.3.2 desktop, rendered workspace tiles and live previews, and responded to IPC open/close; it used isolated XDG directories. **Real window moves/reordering and cross-machine compatibility remain unverified for this revision.** This is not a promise that all Hyprland versions and layouts behave identically.
+Eight Node.js model tests pass. A separate test instance launched successfully on Hyprland 0.57.0 / Quickshell 0.3.2, rendered workspace tiles and live previews, and responded to IPC open/close. With the owner's authorization, a controlled QML reordering test swapped actual windows between workspaces 10 and 11, verified the window positions and persisted name mapping, and restored the windows afterward. A separately injected partial-move failure triggered verified QML recovery. Both tests used isolated XDG state/config/cache directories; the owner's installed overview was not replaced. **Actual mouse drag interaction, other Hyprland/Quickshell versions, and cross-machine compatibility remain unverified.** Recovery cannot be guaranteed if Quickshell or the compositor is terminated mid-move.
 
 See `PROJECT_STATUS.md` for the exact validation status and known limitations.
 
