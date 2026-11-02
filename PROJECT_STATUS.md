@@ -9,7 +9,7 @@ A Hyprland + Quickshell user should be able to clone this repository and run the
 - Repair branch: `sol/portable-standalone`, based on GitHub `main` at `f0643a18681cd2c606df47032bdcadfb7f97c48e`.
 - Workspace: `/home/reason/Projects/ChatGPTProjects/HyprlandOverview/`.
 - Implemented via Remote Desktop Commander by ChatGPT (GPT-6 / Sol); earlier source development involved Forge (Codex) and Qwen.
-- **Publication milestone authorized November 2, 2026:** promote the tested standalone release to GitHub `main` without replacing the owner's deployed overview. GitHub `main` can fast-forward from this branch; the unrelated historical `handoff/main` is preserved rather than overwritten or combined.
+- **Published November 2, 2026:** the standalone release was fast-forwarded from `sol/portable-standalone` into GitHub `main`, preserving the existing public history. The unrelated historical `handoff/main` was left untouched, while the release branch is synchronized on both Git remotes. The owner's deployed overview was not replaced.
 
 ## Supported versions and acceptance
 
@@ -50,8 +50,8 @@ A Hyprland + Quickshell user should be able to clone this repository and run the
 - Compatibility with *other* physical systems, monitors and Hyprland/Quickshell versions remains unverified. In particular, the legacy Hyprland dispatch mode was not tested live.
 - Reordering of pinned/workspace-rule-bound windows, cross-monitor permutations, grouped/pinned/fullscreen/special client states is deliberately refused instead of risking changes to other users' configurations.
 - Window moves are not atomic; automatic rollback cannot be promised if the compositor or test process exits mid-operation.
-- Publication to GitHub `main` was authorized on November 2, 2026. Promotion is by **fast-forward** from the review branch; no live-installation deployment is authorized. The separate `handoff/main` has an unrelated older history and must not be force-updated.
+- The standalone code and README are now the GitHub `main` release (fast-forward publication, November 2, 2026). This was a repository publication, **not** a deployment to the running desktop. The historical unrelated `handoff/main` was intentionally not rewritten.
 
 ## Next potential action
 
-Publish the owner-approved reviewed standalone source as the default GitHub `main` branch, verify the live remote SHA and README, then stop. No local live deployment, release tag, or separate work is authorized by this milestone.
+Publication milestone complete; stop. Future compatibility fixes and live deployments are separate owner decisions. No release tag or modification to the running Quickshell installation was authorized or performed.
