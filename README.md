@@ -1,6 +1,6 @@
 # HyprlandOverview
 
-> **100% vibe-coded:** This project was developed with OpenAI Codex and my locally running Qwen model. I direct the development and testing, but the code is AI-generated. Review it before running it on your desktop. Use at your own discretion.
+> **100% vibe-coded:** This project has been developed using OpenAI Codex, my locally running Qwen model, and ChatGPT (GPT-6). I direct the development and testing, but the code is AI-generated. Review it before running it on your desktop. Use at your own discretion.
 
 A standalone [Quickshell](https://quickshell.org/) workspace overview for [Hyprland](https://hypr.land/). Includes live previews, window drag-and-drop, keyboard navigation, workspace naming, and reordering workspace contents.
 

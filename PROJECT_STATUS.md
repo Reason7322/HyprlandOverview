@@ -5,6 +5,8 @@ Make the owner-used Hyprland Quickshell overview installable via a normal Git cl
 
 ## 2026-11-02 repository-only portability work
 
+Implemented by ChatGPT (GPT-6 / Sol) over Remote Desktop Commander, in a separate ChatGPT-owned checkout; the earlier source involved Forge/Codex and Qwen.
+
 Branch: `sol/portable-standalone`, based on public GitHub `main` at `f0643a18681cd2c606df47032bdcadfb7f97c48e`.
 
 ### Source changes (not a live deployment)
