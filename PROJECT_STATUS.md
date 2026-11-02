@@ -9,7 +9,13 @@ A Hyprland + Quickshell user should be able to clone this repository and run the
 - Repair branch: `sol/portable-standalone`, based on GitHub `main` at `f0643a18681cd2c606df47032bdcadfb7f97c48e`.
 - Workspace: `/home/reason/Projects/ChatGPTProjects/HyprlandOverview/`.
 - Implemented via Remote Desktop Commander by ChatGPT (GPT-6 / Sol); earlier source development involved Forge (Codex) and Qwen.
-- **Not merged to main. Not installed over the owner's deployed overview.**
+- **Publication milestone authorized November 2, 2026:** promote the tested standalone release to GitHub `main` without replacing the owner's deployed overview. GitHub `main` can fast-forward from this branch; the unrelated historical `handoff/main` is preserved rather than overwritten or combined.
+
+## Supported versions and acceptance
+
+- Owner-selected support target: Hyprland **0.56 or newer** and the **current stable Quickshell** (upstream stable **0.3.2** as of November 2, 2026).
+- Direct hardware verification: **Hyprland 0.57.0 + Quickshell 0.3.2**. Hyprland **0.56.x was not tested**, nor were other machines and future Quickshell/Hyprland versions; these are supported targets, not independently verified combinations.
+- Owner accepted the original mouse drag-and-drop interaction based on regular daily use. The repaired source preserved the interaction and live-tested its QML reordering backend, but physical dragging on the repaired branch was not separately observed.
 
 ## Code changes
 
@@ -40,12 +46,12 @@ A Hyprland + Quickshell user should be able to clone this repository and run the
 
 ## Outstanding acceptance / limitations
 
-- Mouse-driven interaction (physically dragging a workspace tile or window) was **not tested**, although the QML backend invoked by the UI was exercised live.
+- Mouse-driven interaction was **accepted by the owner** based on daily use of the original Qwen-built overview; direct mouse drag on the repaired release was not separately observed, though its QML reordering backend was exercised live.
 - Compatibility with *other* physical systems, monitors and Hyprland/Quickshell versions remains unverified. In particular, the legacy Hyprland dispatch mode was not tested live.
 - Reordering of pinned/workspace-rule-bound windows, cross-monitor permutations, grouped/pinned/fullscreen/special client states is deliberately refused instead of risking changes to other users' configurations.
 - Window moves are not atomic; automatic rollback cannot be promised if the compositor or test process exits mid-operation.
-- `main` is unchanged and no release deployment has been performed.
+- Publication to GitHub `main` was authorized on November 2, 2026. Promotion is by **fast-forward** from the review branch; no live-installation deployment is authorized. The separate `handoff/main` has an unrelated older history and must not be force-updated.
 
 ## Next potential action
 
-Review the branch and, if desired, test mouse drag/drop interaction in a controlled environment before deciding whether to merge to `main`. No automatic deployment or merge is authorized.
+Publish the owner-approved reviewed standalone source as the default GitHub `main` branch, verify the live remote SHA and README, then stop. No local live deployment, release tag, or separate work is authorized by this milestone.

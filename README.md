@@ -8,7 +8,7 @@ A standalone [Quickshell](https://quickshell.org/) workspace overview for [Hyprl
 
 ## Install and run
 
-**Requirements:** Hyprland, Quickshell (the `qs` executable), and the Qt modules shipped with Quickshell. No compiler, Python, Noctalia, or custom theme generator is required for the basic overview.
+**Requirements:** Hyprland **0.56 or newer** and the **current stable Quickshell** (version **0.3.2** as of November 2, 2026), including the Qt modules distributed with it. No compiler, Python, Noctalia, or custom theme generator is required for the basic overview.
 
 Install into the standard Quickshell configuration directory:
 
@@ -45,7 +45,7 @@ hl.on("hyprland.start", function()
 end)
 ```
 
-On older Hyprland versions using `hyprland.conf`:
+For Hyprland installations still using legacy `hyprland.conf` configuration (where supported):
 
 ```ini
 bind = CTRL, SPACE, exec, qs ipc -c overview call overview toggle
@@ -78,9 +78,13 @@ Because window rules and monitor placement can conflict with renumbering, the ov
 
 The legacy Python-based rule-rewriting helper remains in the source tree for historical reference but is **not invoked by the standalone runtime**. Python and `luac` are not required to launch this version.
 
-## Verification status
+## Supported versions and verification
 
-Eight Node.js model tests pass. A separate test instance launched successfully on Hyprland 0.57.0 / Quickshell 0.3.2, rendered workspace tiles and live previews, and responded to IPC open/close. With the owner's authorization, a controlled QML reordering test swapped actual windows between workspaces 10 and 11, verified the window positions and persisted name mapping, and restored the windows afterward. A separately injected partial-move failure triggered verified QML recovery. Both tests used isolated XDG state/config/cache directories; the owner's installed overview was not replaced. **Actual mouse drag interaction, other Hyprland/Quickshell versions, and cross-machine compatibility remain unverified.** Recovery cannot be guaranteed if Quickshell or the compositor is terminated mid-move.
+**Intended supported versions:** Hyprland **0.56+**, with the **latest stable Quickshell release**. At publication on November 2, 2026, that is Quickshell **0.3.2** ([official changelog](https://quickshell.org/changelog/)). Check your installation using `hyprctl version` and `qs --version`.
+
+**Actually tested:** Fedora 44, Hyprland **0.57.0**, Quickshell **0.3.2** on a physical Wayland desktop. Eight Node.js model tests pass. A fresh Git clone with no local `config.json` launched successfully. A separate Quickshell instance rendered workspace tiles and live window previews, responded to IPC open/close, and completed a controlled workspace-content swap between 10 and 11. The window positions and saved workspace-name mapping were verified and restored. A deliberately failed second window move triggered successful QML recovery. These tests used isolated XDG state/config/cache directories; the owner's installed overview was not replaced.
+
+**Not separately verified:** Hyprland **0.56.x specifically**, later Hyprland/Quickshell releases, multi-monitor permutations, other machines, and mouse-driven drag interactions in the *repaired release branch*. The author confirms using the original mouse interaction successfully in daily use; its backend was exercised in the repaired release. Unsupported workspace layouts may be refused for safety. Recovery cannot be guaranteed if Quickshell or the compositor terminates mid-move.
 
 See `PROJECT_STATUS.md` for the exact validation status and known limitations.
 
