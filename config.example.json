@@ -1,6 +1,6 @@
 {
   "appearance": {
-    "colorSource": "noctalia",
+    "colorSource": "default",
     "rounding": {
       "verysmall": 8,
       "small": 12,
@@ -22,7 +22,7 @@
       "panelOpacity": 0.72,
       "workspaceOpacity": 0.68,
       "windowOverlayOpacity": 0.10,
-      "enableBlur": true,
+      "enableBlur": false,
       "glassMode": true,
       "glassTintStrength": 0.35,
       "glassBorderOpacity": 0.78,

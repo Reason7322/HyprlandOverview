@@ -1,6 +1,5 @@
 
-# Generated local theme and deployment metadata
-/common/Appearance.colors.qml
+# Local settings and deployment metadata
 /config.json
 /.hyprland-overview-stage.json
 

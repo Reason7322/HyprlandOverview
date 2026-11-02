@@ -53,7 +53,7 @@ Singleton {
 
     property QtObject options: QtObject {
         property QtObject appearance: QtObject {
-            property string colorSource: root.readString("appearance.colorSource", "noctalia")
+            property string colorSource: root.readString("appearance.colorSource", "default")
 
             property QtObject rounding: QtObject {
                 property int unsharpen: root.readInt("appearance.rounding.unsharpen", 2)
